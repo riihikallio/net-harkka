@@ -17,11 +17,10 @@ void client(int sockfd)
 
     len = read(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
-    write(sockfd, "HELLO", 6);
+    write(sockfd, "HELLO there\n", strlen("HELLO there\n"));
     while(len > 0) {
         len = read(sockfd, buff, sizeof(buff));
         write(STDOUT_FILENO, buff, len);
-        printf("Len: %d\n", len);
     }
     if (len < 0) ERR("read failed");
 }
