@@ -49,8 +49,7 @@ void sendFile(char *filename, int filelen, int port) {
     ptr = malloc(filelen);
     if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
     if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
-    while ((len = write(sockfd, ptr, filelen)) > 0) puts("Sending...");
-    // if (len < 0) ERR("sendFile write failed");
+    if ((len = write(sockfd, ptr, filelen)) < 0) ERR("sendFile write failed");
 
     // Clean up
     free(ptr);
