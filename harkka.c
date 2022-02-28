@@ -35,6 +35,7 @@ void sendFile(char *filename, int filelen, int port) {
     memcpy(&remote, remoteServer, sizeof(struct addrinfo));
 
     // Prepare the connection
+    printf("Sendfile port: %d\n", port);
     port = htons(port);
     if (remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
     else ((struct sockaddr_in6*)&remote)->sin6_port = port;
@@ -84,14 +85,14 @@ void serve(int sockfd) {
                     if (stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
                     sprintf(szstr, "%ld", statbuf.st_size);
                     write(sockfd, szstr, strlen(szstr));
-                    printf("Size: %s\n", szstr);
 
-                    sendFile(buff+2, statbuf.st_size, atoi(buff + len - 6));
+                    sendFile(buff+2, statbuf.st_size, atoi(ptr + 1));
                     break;
             case 'A':
                     puts("ACCEPTED!!");
             case 'Q':
                     len = 0;    // exits while()
+                    puts("Quitting child");
         }
     }
     if (len < 0) ERR("read failed");
