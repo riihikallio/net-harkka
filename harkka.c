@@ -9,14 +9,17 @@
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
 
+void server(int port) {
+
+}
+
 #define HELLO "HELLO\n"
 #define LOGIN "priihika\n"
-
 
 void client(int sockfd)
 {
     char buff[MAX];
-    int len = 1;
+    int len = 1, port;
 
     len = read(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
@@ -24,6 +27,10 @@ void client(int sockfd)
     len = read(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
     write(sockfd, LOGIN, strlen(LOGIN));
+    len = read(sockfd, buff, sizeof(buff));
+    len = read(sockfd, buff, sizeof(buff));
+    port = atoi(buff + len - 6);
+    printf("Port: %d\n", port);
     
     while(len > 0) {
         len = read(sockfd, buff, sizeof(buff));
