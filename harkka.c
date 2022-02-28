@@ -44,12 +44,14 @@ void sendFile(char *filename, int filelen, int port) {
         ERR("sendFile connect failed");
         close(sockfd);
     }
-
+    puts("Sending");
     // Send the file
     ptr = malloc(filelen);
     if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
-    if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
+    if ((len = read(filefd, ptr, filelen)) < 0) ERR("sendFile read failed");
+    printf("Read: %d bytes\n", len);
     if ((len = write(sockfd, ptr, filelen)) < 0) ERR("sendFile write failed");
+    printf("Sent: %d bytes\n", len);
 
     // Clean up
     free(ptr);
