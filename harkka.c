@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
@@ -142,6 +143,15 @@ void client(int sockfd) {
         write(STDOUT_FILENO, buff, len);
     }
     if (len < 0) ERR("read failed");
+}
+
+void *get_in_addr(struct sockaddr *sa)
+{
+	if (sa->sa_family == AF_INET) {
+		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
+
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
    
 int main()
