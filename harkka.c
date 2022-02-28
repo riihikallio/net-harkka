@@ -28,11 +28,11 @@ void client(int sockfd)
     write(STDOUT_FILENO, buff, len);
     write(sockfd, LOGIN, strlen(LOGIN));
     len = read(sockfd, buff, sizeof(buff));
-    write(sockfd, LOGIN, strlen(LOGIN));
+    write(STDOUT_FILENO, buff, len);
     len = read(sockfd, buff, sizeof(buff));
-    write(sockfd, LOGIN, strlen(LOGIN));
+    write(STDOUT_FILENO, buff, len);
     len = read(sockfd, buff, sizeof(buff));
-    write(sockfd, LOGIN, strlen(LOGIN));
+    write(STDOUT_FILENO, buff, len);
     port = atoi(buff + len - 6);
     printf("Port: %d\n", port);
     server(port);
