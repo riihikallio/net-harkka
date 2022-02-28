@@ -35,7 +35,6 @@ void sendFile(char *filename, int filelen, int port) {
     memcpy(&remote, remoteServer, sizeof(struct addrinfo));
 
     // Prepare the connection
-    printf("Sendfile port: %d\n", port);
     port = htons(port);
     if (remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
     else ((struct sockaddr_in6*)&remote)->sin6_port = port;
@@ -51,7 +50,7 @@ void sendFile(char *filename, int filelen, int port) {
     ptr = malloc(filelen);
     if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
     if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
-    while ((len = write(sockfd, ptr, filelen)) > 0) ;
+    while ((len = write(sockfd, ptr, filelen)) > 0) puts("Sending..");
     if (len < 0) ERR("sendFile write failed");
 
     // Clean up
@@ -86,48 +85,48 @@ void serve(int sockfd) {
                     sprintf(szstr, "%ld", statbuf.st_size);
                     write(sockfd, szstr, strlen(szstr));
 
-                    sendFile(buff+2, statbuf.st_size, atoi(ptr + 1));
+                    sendFile(buff+2, statbuf.st_size, atoi(ptr + 1)); // Last is the port
                     break;
             case 'A':
                     puts("ACCEPTED!!");
             case 'Q':
                     len = 0;    // exits while()
-                    puts("Quitting child");
         }
     }
     if (len < 0) ERR("read failed");
 }
 
 void newserver(int port) {
-    int sockfd, childSocket;
+    int serverfd, childfd;
 	struct sockaddr_in serverAddr, clientAddr;
     pid_t childpid;
     socklen_t addr_size;
 
     // create socket
-	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ERR("server socket failed");
+	if((serverfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ERR("server socket failed");
 
     // bind and listen
     memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-    if (bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+    if (bind(serverfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
                 ERR("server bind failed");
-    if (listen(sockfd, 10) < 0) ERR("server listen failed");
+    if (listen(serverfd, 10) < 0) ERR("server listen failed");
 
     // create children
     while (1) {
         addr_size = sizeof(clientAddr);
-        childSocket = accept(sockfd, (struct sockaddr*)&clientAddr, &addr_size);
-        if (childSocket < 0) ERR("server accept failed");
+        childfd = accept(serverfd, (struct sockaddr*)&clientAddr, &addr_size);
+        if (childfd < 0) ERR("server accept failed");
         childpid = fork();
         if (childpid == 0) {
-            close(sockfd);
-            serve(childSocket);
+            close(serverfd);
+            serve(childfd);
+            close(childfd);
             exit(0);    // child process
         } else {
-            close(childSocket);
+            close(childfd);
         }
     }
 }
