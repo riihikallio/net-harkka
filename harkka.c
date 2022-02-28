@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
