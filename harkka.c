@@ -24,7 +24,7 @@ int myRead(int sockfd, char *buff, int size) {
         if (n == 0) break;
         if (n < 0) return(-1);
         cnt += n;
-    } while(buff[cnt-1] != '\n' && cnt < size);
+    } while (buff[cnt-1] != '\n' && cnt < size);
     return(cnt);
 }
 
@@ -36,7 +36,7 @@ void sendFile(char *filename, int filelen, int port) {
 
     // Prepare the connection
     port = htons(port);
-    if(remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
+    if (remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
     else ((struct sockaddr_in6*)&remote)->sin6_port = port;
 
     if ((sockfd = socket(remote.ai_family, remote.ai_socktype,
@@ -48,9 +48,9 @@ void sendFile(char *filename, int filelen, int port) {
 
     // Send the file
     ptr = malloc(filelen);
-    if((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
+    if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
     if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
-    while((len = write(sockfd, ptr, filelen)) > 0) ;
+    while ((len = write(sockfd, ptr, filelen)) > 0) ;
     if (len < 0) ERR("sendFile write failed");
 
     // Clean up
@@ -83,7 +83,7 @@ void serve(int sockfd) {
                     // Reply with the size
                     ptr = strchr(buff + 2, ' ');    // Look for the next space
                     *ptr = '\0';                    // Zero terminate the filename
-                    if(stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
+                    if (stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
                     sprintf(buff, "%ld", statbuf.st_size);
                     write(sockfd, buff, strlen(buff));
 
@@ -112,16 +112,16 @@ void newserver(int port) {
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-    if(bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+    if (bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
                 ERR("server bind failed");
-    if(listen(sockfd, 10) < 0) ERR("server listen failed");
+    if (listen(sockfd, 10) < 0) ERR("server listen failed");
 
     // create children
-    while(1) {
+    while (1) {
         childSocket = accept(sockfd, (struct sockaddr*)&clientAddr, &addr_size);
-        if(childSocket < 0) ERR("child socket failed");
+        if (childSocket < 0) ERR("server accept failed");
         childpid = fork();
-        if(childpid == 0) {
+        if (childpid == 0) {
             close(sockfd);
             serve(childSocket);
             exit(0);    // child process
@@ -151,7 +151,7 @@ void client(int sockfd) {
     printf("Port: %d\n", port);
     newserver(port);
     
-    while(len > 0) {
+    while (len > 0) {
         len = myRead(sockfd, buff, sizeof(buff));
         write(STDOUT_FILENO, buff, len);
     }
@@ -179,7 +179,7 @@ int main()
     if (getaddrinfo("whx-10.cs.helsinki.fi", "UNIX_TL", &hints, &serverAddr) != 0) ERR("getaddrinfo failed");
    
     // connect the client socket to a server address in the list
-	for(p = serverAddr; p != NULL; p = p->ai_next) {
+	for (p = serverAddr; p != NULL; p = p->ai_next) {
 		if ((sockfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) < 0) {
 			perror("looping: socket");
@@ -192,7 +192,7 @@ int main()
 		}
 		break;
 	}
-    if(p == NULL) ERR("client connection failed");
+    if (p == NULL) ERR("client connection failed");
     remoteServer = p;
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
 			s, sizeof s);
@@ -201,7 +201,7 @@ int main()
     // do the work
     client(sockfd);
    
-    // clean up
+    // clean up (not really reached)
     freeaddrinfo(serverAddr);
     close(sockfd);
 }
