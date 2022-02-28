@@ -57,10 +57,12 @@ void serve(int sockfd) {
         write(STDOUT_FILENO, buff, len);
         switch(buff[0]) {
             case 'E':
+                    puts("ECHO requested");
                     for(int i=0; i<len; i++) {
                         buff[i] = toupper(buff[i]);
                     }
                     write(sockfd, buff, len);
+                    write(STDOUT_FILENO, buff, len);
                     break;
             case 'C':
                     write(sockfd, CODE, strlen(CODE));
