@@ -25,20 +25,29 @@ void client(int sockfd)
 int main()
 {
     int sockfd;
-    struct addrinfo hints, *server;
-   
-    // socket create and verification
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) ERR("socket creation failed");
+    struct addrinfo hints, *server, *p;
    
     // get server IP, PORT
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
     if (getaddrinfo("whx-10.cs.helsinki.fi", "UNIX_TL", &hints, &server) != 0) ERR("getaddrinfo failed");
    
-    // connect the client socket to server socket
-    if (connect(sockfd, (SA*)server, sizeof(*server)) < 0) ERR("connection with the server failed");
-   
+    // connect the client socket to server address in the list
+	for(p = server; p != NULL; p = p->ai_next) {
+		if ((sockfd = socket(p->ai_family, p->ai_socktype,
+				p->ai_protocol)) < 0) {
+			perror("looping: socket");
+			continue;
+		}
+
+		if (connect(sockfd, p->ai_addr, p->ai_addrlen) < 0) {
+			perror("looping: connect");
+			close(sockfd);
+			continue;
+		}
+
+		break;
+	}
+
     // do the work
     client(sockfd);
    
