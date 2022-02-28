@@ -66,7 +66,7 @@ void serve(int sockfd) {
                     ptr = strchr(buff + 2, ' ');    // Look for the next space
                     *ptr = '\0';                    // Zero terminate the filename
                     if(stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
-                    sprintf(buff, "%lld", statbuf.st_size);
+                    sprintf(buff, "%ld", statbuf.st_size);
                     write(sockfd, buff, strlen(buff));
 
                     sendFile(buff+2, statbuf.st_size, atoi(buff + len - 6));
