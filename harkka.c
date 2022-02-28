@@ -60,7 +60,7 @@ void sendFile(char *filename, int filelen, int port) {
 
 #define CODE "net-harkka/harkka.c\n"
 void serve(int sockfd) {
-    char buff[MAX], *ptr;
+    char buff[MAX], szstr[20], *ptr;
     struct stat statbuf;
     int len = 1;
 
@@ -69,12 +69,10 @@ void serve(int sockfd) {
         write(STDOUT_FILENO, buff, len);
         switch(buff[0]) {
             case 'E':
-                    puts("ECHO requested");
                     for(int i=0; i<len; i++) {
                         buff[i] = toupper(buff[i]);
                     }
                     write(sockfd, buff, len);
-                    write(STDOUT_FILENO, buff, len);
                     break;
             case 'C':
                     write(sockfd, CODE, strlen(CODE));
@@ -84,8 +82,9 @@ void serve(int sockfd) {
                     ptr = strchr(buff + 2, ' ');    // Look for the next space
                     *ptr = '\0';                    // Zero terminate the filename
                     if (stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
-                    sprintf(buff, "%ld", statbuf.st_size);
-                    write(sockfd, buff, strlen(buff));
+                    sprintf(szstr, "%ld", statbuf.st_size);
+                    write(sockfd, szstr, strlen(szstr));
+                    printf("Size: %s\n", szstr);
 
                     sendFile(buff+2, statbuf.st_size, atoi(buff + len - 6));
                     break;
