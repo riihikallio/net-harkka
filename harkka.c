@@ -17,14 +17,15 @@
 struct addrinfo *remoteServer;
 
 int myRead(int sockfd, char *buff, int size) {
-    char c = '\0';
-    int n = 0;
+    int cnt = 0, n;
 
-    while(c != '\n' && n < size) {
-        if(read(sockfd, buff + n, 1) < 1) break;
-        n++;
-    }
-    return(n);
+    do {
+        n = read(sockfd, buff + cnt, size - cnt);
+        if (n == 0) break;
+        if (n < 0) return(-1);
+        cnt += n;
+    } while(buff[cnt-1] != '\n' && cnt < size);
+    return(cnt);
 }
 
 void sendFile(char *filename, int filelen, int port) {
