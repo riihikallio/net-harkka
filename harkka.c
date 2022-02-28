@@ -82,7 +82,6 @@ void serve(int sockfd) {
         }
     }
     if (len < 0) ERR("read failed");
-
 }
 
 void newserver(int port) {
@@ -111,6 +110,7 @@ void newserver(int port) {
         if(childpid == 0) {
             close(sockfd);
             serve(childSocket);
+            exit(0);    // child process
 //        } else {
 //            close(childSocket);
         }
@@ -163,7 +163,7 @@ int main()
    
     // get server IP, PORT
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo("whx-10.cs.helsinki.fi", "UNIX_TL", &hints, &serverAddr) != 0) ERR("getaddrinfo failed");
    
     // connect the client socket to a server address in the list
@@ -180,7 +180,7 @@ int main()
 		}
 		break;
 	}
-    if(p == NULL) ERR("initial connection failed");
+    if(p == NULL) ERR("client connection failed");
     remoteServer = p;
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
 			s, sizeof s);
