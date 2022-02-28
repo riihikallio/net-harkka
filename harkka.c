@@ -118,6 +118,7 @@ void newserver(int port) {
 
     // create children
     while (1) {
+        addr_size = sizeof(clientAddr);
         childSocket = accept(sockfd, (struct sockaddr*)&clientAddr, &addr_size);
         if (childSocket < 0) ERR("server accept failed");
         childpid = fork();
