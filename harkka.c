@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
