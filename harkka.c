@@ -16,13 +16,16 @@
 
 struct addrinfo *remoteServer;
 
+// TODO: Handle SIGCHLD, SIGINT
+
+// Read full lines ending in \n
 int myRead(int sockfd, char *buff, int size) {
     int cnt = 0, n;
 
     do {
         n = read(sockfd, buff + cnt, size - cnt);
         if (n == 0) break;
-        if (n < 0) return(-1);
+        if (n < 0) return(n);
         cnt += n;
     } while (buff[cnt-1] != '\n' && cnt < size);
     return(cnt);
@@ -35,30 +38,26 @@ void sendFile(char *filename, int filelen, int port) {
     memcpy(&remote, remoteServer, sizeof(struct addrinfo));
 
     // Prepare the connection
-    printf("Port: %d\n", port);
     ((struct sockaddr_in*)remote.ai_addr)->sin_port = htons(port);
-
     if ((sockfd = socket(remote.ai_family, remote.ai_socktype,
             remote.ai_protocol)) < 0) ERR("sendFile socket failed");
     if (connect(sockfd, remote.ai_addr, remote.ai_addrlen) < 0) {
         ERR("sendFile connect failed");
         close(sockfd);
     }
-    puts("Sending");
+
     // Send the file
     ptr = malloc(filelen);
     if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
     if ((len = read(filefd, ptr, filelen)) < 0) ERR("sendFile read failed");
-    printf("Read: %d bytes\n", len);
     if ((len = write(sockfd, ptr, filelen)) < 0) ERR("sendFile write failed");
-    printf("Sent: %d bytes\n", len);
 
     // Clean up
     free(ptr);
     close(sockfd);
 }
 
-#define CODE "net-harkka/harkka.c\n"
+// Serve a single connection
 void serve(int sockfd) {
     char buff[MAX], szstr[20], *ptr;
     struct stat statbuf;
@@ -75,6 +74,7 @@ void serve(int sockfd) {
                     write(sockfd, buff, len);
                     break;
             case 'C':
+                    #define CODE "net-harkka/harkka.c\n"
                     write(sockfd, CODE, strlen(CODE));
                     break;
             case 'F':
@@ -84,11 +84,10 @@ void serve(int sockfd) {
                     if (stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
                     sprintf(szstr, "%ld\n", statbuf.st_size);
                     write(sockfd, szstr, strlen(szstr));
-
-                    sendFile(buff+2, statbuf.st_size, atoi(ptr + 1)); // Last is the port
+                    // Send the file on another connection
+                    sendFile(buff+2, statbuf.st_size, atoi(ptr + 1)); // Last is the portnumber
                     break;
             case 'A':
-                    puts("ACCEPTED!!");
             case 'Q':
                     len = 0;    // exits while()
         }
@@ -96,16 +95,17 @@ void serve(int sockfd) {
     if (len < 0) ERR("read failed");
 }
 
+// Fork a child for each connection
 void newserver(int port) {
     int serverfd, childfd;
 	struct sockaddr_in serverAddr, clientAddr;
     pid_t childpid;
     socklen_t addr_size;
 
-    // create socket
+    // Create socket
 	if((serverfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ERR("server socket failed");
 
-    // bind and listen
+    // Bind and listen
     memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(port);
@@ -114,7 +114,7 @@ void newserver(int port) {
                 ERR("server bind failed");
     if (listen(serverfd, 10) < 0) ERR("server listen failed");
 
-    // create children
+    // Fork children
     while (1) {
         addr_size = sizeof(clientAddr);
         childfd = accept(serverfd, (struct sockaddr*)&clientAddr, &addr_size);
@@ -131,17 +131,17 @@ void newserver(int port) {
     }
 }
 
-#define HELLO "HELLO\n"
-#define LOGIN "priihika\n"
 void client(int sockfd) {
     char buff[MAX];
     int len = 1, port;
 
     len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
+    #define HELLO "HELLO\n"
     write(sockfd, HELLO, strlen(HELLO));
     len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
+    #define LOGIN "priihika\n"
     write(sockfd, LOGIN, strlen(LOGIN));
     len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
@@ -157,22 +157,13 @@ void client(int sockfd) {
     if (len < 0) ERR("read failed");
 }
 
-void *get_in_addr(struct sockaddr *sa)
-{
-	if (sa->sa_family == AF_INET) {
-		return &(((struct sockaddr_in*)sa)->sin_addr);
-	}
-
-	return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-   
 int main()
 {
     int sockfd;
     struct addrinfo hints, *serverAddr, *p;
     char s[INET6_ADDRSTRLEN];
    
-    // get server IP, PORT
+    // get server IP & PORT
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo("whx-10.cs.helsinki.fi", "UNIX_TL", &hints, &serverAddr) != 0) ERR("getaddrinfo failed");
@@ -193,9 +184,6 @@ int main()
 	}
     if (p == NULL) ERR("client connection failed");
     remoteServer = p;
-    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
-			s, sizeof s);
-	printf("client: connecting to %s\n", s);
 
     // do the work
     client(sockfd);
