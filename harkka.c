@@ -29,6 +29,7 @@ void client(int sockfd)
     write(sockfd, LOGIN, strlen(LOGIN));
     len = read(sockfd, buff, sizeof(buff));
     len = read(sockfd, buff, sizeof(buff));
+    len = read(sockfd, buff, sizeof(buff));
     port = atoi(buff + len - 6);
     printf("Port: %d %s\n", port, (buff + len - 6));
     
