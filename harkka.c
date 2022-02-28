@@ -157,11 +157,9 @@ void client(int sockfd) {
     if (len < 0) ERR("read failed");
 }
 
-int main()
-{
+int main() {
     int sockfd;
     struct addrinfo hints, *serverAddr, *p;
-    char s[INET6_ADDRSTRLEN];
    
     // get server IP & PORT
     memset(&hints, 0, sizeof(struct addrinfo));
