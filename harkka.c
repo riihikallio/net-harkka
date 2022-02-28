@@ -125,8 +125,8 @@ void newserver(int port) {
             close(sockfd);
             serve(childSocket);
             exit(0);    // child process
-//        } else {
-//            close(childSocket);
+        } else {
+            close(childSocket);
         }
     }
 }
