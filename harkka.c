@@ -148,6 +148,7 @@ int main()
 {
     int sockfd;
     struct addrinfo hints, *serverAddr, *p;
+    char s[INET6_ADDRSTRLEN];
    
     // get server IP, PORT
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -169,8 +170,10 @@ int main()
 		break;
 	}
     if(p == NULL) ERR("initial connection failed");
-            remoteServer = p;
-
+    remoteServer = p;
+    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
+			s, sizeof s);
+	printf("client: connecting to %s\n", s);
 
     // do the work
     client(sockfd);
