@@ -34,7 +34,7 @@ int main()
     if (getaddrinfo("whx-10.cs.helsinki.fi", "UNIX_TL", &hints, &server) != 0) ERR("getaddrinfo failed");
    
     // connect the client socket to server socket
-    if (connect(sockfd, (SA*)&server, sizeof(server)) != 0) ERR("connection with the server failed");
+    if (connect(sockfd, (SA*)server, sizeof(*server)) != 0) ERR("connection with the server failed");
    
     // do the work
     client(sockfd);
