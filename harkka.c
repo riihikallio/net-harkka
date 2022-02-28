@@ -15,17 +15,19 @@
 struct addrinfo *remoteServer;
 
 void sendFile(char *filename, int filelen, int port) {
+    struct addrinfo remote;
     int sockfd, filefd, len;
     char *ptr;
+    memcpy(&remote, remoteServer, sizeof(struct addrinfo));
 
     // Prepare the connection
     port = htons(port);
-    if(remoteServer->ai_family == AF_INET) ((struct sockaddr_in*)remoteServer)->sin_port = port;
-    else ((struct sockaddr_in6*)remoteServer)->sin6_port = port;
+    if(remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
+    else ((struct sockaddr_in6*)&remote)->sin6_port = port;
 
-    if ((sockfd = socket(remoteServer->ai_family, remoteServer->ai_socktype,
-            remoteServer->ai_protocol)) < 0) ERR("sendFile socket failed");
-    if (connect(sockfd, remoteServer->ai_addr, remoteServer->ai_addrlen) < 0) {
+    if ((sockfd = socket(remote.ai_family, remote.ai_socktype,
+            remote.ai_protocol)) < 0) ERR("sendFile socket failed");
+    if (connect(sockfd, remote.ai_addr, remote.ai_addrlen) < 0) {
         ERR("sendFile connect failed");
         close(sockfd);
     }
@@ -164,9 +166,11 @@ int main()
 			close(sockfd);
 			continue;
 		}
-        remoteServer = p;
 		break;
 	}
+    if(p == NULL) ERR("initial connection failed");
+            remoteServer = p;
+
 
     // do the work
     client(sockfd);
