@@ -12,21 +12,8 @@ LDLIBS   := -lm
 
 .PHONY: all clean run
 
-all: $(EXE)
-
-$(EXE): $(BIN_DIR)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
-$(BIN_DIR) $(OBJ_DIR):
-	mkdir -p $@
+all: 
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS) -c $< -o $@
 
 clean:
 	@$(RM) -rv $(EXE)
-
-run: $(EXE)
-	$(EXE)
-
--include $(OBJ:.o=.d)
