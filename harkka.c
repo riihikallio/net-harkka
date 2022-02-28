@@ -16,6 +16,17 @@
 
 struct addrinfo *remoteServer;
 
+int myRead(int sockfd, char *buff, int size) {
+    char c = '\0';
+    int n = 0;
+
+    while(c != '\n' && n < size) {
+        if(read(sockfd, buff + n, 1) < 1) break;
+        n++;
+    }
+    return(n);
+}
+
 void sendFile(char *filename, int filelen, int port) {
     struct addrinfo remote;
     int sockfd, filefd, len;
@@ -53,7 +64,7 @@ void serve(int sockfd) {
     int len = 1;
 
     while(len > 0) {
-        len = read(sockfd, buff, sizeof(buff));
+        len = myRead(sockfd, buff, sizeof(buff));
         write(STDOUT_FILENO, buff, len);
         switch(buff[0]) {
             case 'E':
@@ -125,24 +136,22 @@ void client(int sockfd) {
     char buff[MAX];
     int len = 1, port;
 
-    len = read(sockfd, buff, sizeof(buff));
+    len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
     write(sockfd, HELLO, strlen(HELLO));
-    len = read(sockfd, buff, sizeof(buff));
+    len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
     write(sockfd, LOGIN, strlen(LOGIN));
-    len = read(sockfd, buff, sizeof(buff));
+    len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
-    len = read(sockfd, buff, sizeof(buff));
-    write(STDOUT_FILENO, buff, len);
-    len = read(sockfd, buff, sizeof(buff));
+    len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
     port = atoi(buff + len - 6);
     printf("Port: %d\n", port);
     newserver(port);
     
     while(len > 0) {
-        len = read(sockfd, buff, sizeof(buff));
+        len = myRead(sockfd, buff, sizeof(buff));
         write(STDOUT_FILENO, buff, len);
     }
     if (len < 0) ERR("read failed");
