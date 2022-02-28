@@ -36,7 +36,7 @@ void sendFile(char *filename, int filelen, int port) {
 
     // Prepare the connection
     printf("Port: %d\n", port);
-    ((struct sockaddr_in*)&remote)->sin_port = htons(port);
+    ((struct sockaddr_in*)remote.ai_addr)->sin_port = htons(port);
 
     if ((sockfd = socket(remote.ai_family, remote.ai_socktype,
             remote.ai_protocol)) < 0) ERR("sendFile socket failed");
@@ -134,7 +134,7 @@ void newserver(int port) {
 #define HELLO "HELLO\n"
 #define LOGIN "priihika\n"
 void client(int sockfd) {
-    char buff[MAX], *ptr;
+    char buff[MAX];
     int len = 1, port;
 
     len = myRead(sockfd, buff, sizeof(buff));
