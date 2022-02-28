@@ -103,6 +103,7 @@ void newserver(int port) {
     socklen_t addr_size;
 
     // create socket
+    printf("Port1: %d\n", port);
 	if((serverfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ERR("server socket failed");
 
     // bind and listen
@@ -134,8 +135,8 @@ void newserver(int port) {
 #define HELLO "HELLO\n"
 #define LOGIN "priihika\n"
 void client(int sockfd) {
-    char buff[MAX];
-    int len = 1, port;
+    char buff[MAX], *ptr;
+    int len = 1;
 
     len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
@@ -147,9 +148,7 @@ void client(int sockfd) {
     write(STDOUT_FILENO, buff, len);
     len = myRead(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
-    port = atoi(buff + len - 6);
-    printf("Port: %d\n", port);
-    newserver(port);
+    newserver(atoi(memrchr(buff, ' ', len)));
     
     while (len > 0) {
         len = myRead(sockfd, buff, sizeof(buff));
