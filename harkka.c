@@ -28,14 +28,14 @@ void newserver(int port) {
     socklen_t addr_size;
 
     // create socket
-	if((sockfd = socket(AF_INET, SOCK_STREAM, 0) < 0)) ERR("server socket failed");
+	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) ERR("server socket failed");
 
     // bind and listen
     memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-    if((bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr))) < 0)
+    if(bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
                 ERR("server bind failed");
     if(listen(sockfd, 10) < 0) ERR("server listen failed");
 
