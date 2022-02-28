@@ -82,7 +82,7 @@ void serve(int sockfd) {
                     ptr = strchr(buff + 2, ' ');    // Look for the next space
                     *ptr = '\0';                    // Zero terminate the filename
                     if (stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
-                    sprintf(szstr, "%ld", statbuf.st_size);
+                    sprintf(szstr, "%ld\n", statbuf.st_size);
                     write(sockfd, szstr, strlen(szstr));
 
                     sendFile(buff+2, statbuf.st_size, atoi(ptr + 1)); // Last is the port
