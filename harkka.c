@@ -39,6 +39,7 @@ int main()
     // do the work
     client(sockfd);
    
-    // close the socket
+    // clean up
+    freeaddrinfo(server);
     close(sockfd);
 }
