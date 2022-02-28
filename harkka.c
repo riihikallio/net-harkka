@@ -8,7 +8,8 @@
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
-#define LOGIN "HELLO priihika"
+
+#define LOGIN "priihika\n"
 
 
 void client(int sockfd)
