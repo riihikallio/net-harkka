@@ -8,6 +8,7 @@
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
+#define LOGIN "HELLO priihika\n"
 
 
 void client(int sockfd)
@@ -17,7 +18,7 @@ void client(int sockfd)
 
     len = read(sockfd, buff, sizeof(buff));
     write(STDOUT_FILENO, buff, len);
-    write(sockfd, "HELLO there\n", strlen("HELLO there\n"));
+    write(sockfd, LOGIN, strlen(LOGIN));
     while(len > 0) {
         len = read(sockfd, buff, sizeof(buff));
         write(STDOUT_FILENO, buff, len);
