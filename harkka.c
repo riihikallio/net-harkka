@@ -7,20 +7,22 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #define MAX 1024
 #define SA struct sockaddr
 #define ERR(msg) { perror(msg); exit(1); }
 
 struct addrinfo *remoteServer;
 
-void sendFile(int mainfd, char *buff, int len) {
-    int sockfd, filefd;
-    int port = atoi(buff + len - 6);
+void sendFile(char *filename, int filelen, int port) {
+    int sockfd, filefd, len;
     char *ptr;
-    struct stat *statbuf;
-    off_t size;
 
     // Prepare the connection
+    port = htons(port);
+    if(remoteServer->ai_family == AF_INET) ((struct sockaddr_in*)remoteServer)->sin_port = port;
+    else ((struct sockaddr_in6*)remoteServer)->sin6_port = port;
+
     if ((sockfd = socket(remoteServer->ai_family, remoteServer->ai_socktype,
             remoteServer->ai_protocol)) < 0) ERR("sendFile socket failed");
     if (connect(sockfd, remoteServer->ai_addr, remoteServer->ai_addrlen) < 0) {
@@ -28,16 +30,12 @@ void sendFile(int mainfd, char *buff, int len) {
         close(sockfd);
     }
 
-    // Reply with the size
-    ptr = strchr(buff + 2, ' ');
-    ptr = '\0';     // Zero terminate the filename
-    if(stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
-    sprintf(buff, "%ld", statbuf->st_size);
-    write(sockfd, buff, strlen(buff));
-
     // Send the file
-    ptr = malloc(statbuf->st_size);
-    //filefd = open()
+    ptr = malloc(filelen);
+    if((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
+    if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
+    while((len = write(sockfd, ptr, filelen)) > 0) ;
+    if (len < 0) ERR("sendFile write failed");
 
     // Clean up
     free(ptr);
@@ -46,7 +44,8 @@ void sendFile(int mainfd, char *buff, int len) {
 
 #define CODE "net-harkka/harkka.c\n"
 void serve(int sockfd) {
-    char buff[MAX];
+    char buff[MAX], *ptr;
+    struct stat statbuf;
     int len = 1;
 
     while(len > 0) {
@@ -63,7 +62,14 @@ void serve(int sockfd) {
                     write(sockfd, CODE, strlen(CODE));
                     break;
             case 'F':
-                    sendFile(sockfd, buff, len);
+                    // Reply with the size
+                    ptr = strchr(buff + 2, ' ');    // Look for the next space
+                    *ptr = '\0';                    // Zero terminate the filename
+                    if(stat(buff+2, &statbuf) < 0) ERR("sendFile stat failed");
+                    sprintf(buff, "%lld", statbuf.st_size);
+                    write(sockfd, buff, strlen(buff));
+
+                    sendFile(buff+2, statbuf.st_size, atoi(buff + len - 6));
                     break;
             case 'A':
                     puts("ACCEPTED!!");
