@@ -30,7 +30,7 @@ void client(int sockfd)
     len = read(sockfd, buff, sizeof(buff));
     len = read(sockfd, buff, sizeof(buff));
     port = atoi(buff + len - 6);
-    printf("Port: %d\n", port);
+    printf("Port: %d %s\n", port, (buff + len - 6));
     
     while(len > 0) {
         len = read(sockfd, buff, sizeof(buff));
