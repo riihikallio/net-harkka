@@ -13,7 +13,7 @@ LDLIBS   := -lm
 .PHONY: all clean run
 
 all: 
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS) -o harkka harkka.c
 
 clean:
 	@$(RM) -rv $(EXE)
