@@ -35,9 +35,8 @@ void sendFile(char *filename, int filelen, int port) {
     memcpy(&remote, remoteServer, sizeof(struct addrinfo));
 
     // Prepare the connection
-    port = htons(port);
-    if (remote.ai_family == AF_INET) ((struct sockaddr_in*)&remote)->sin_port = port;
-    else ((struct sockaddr_in6*)&remote)->sin6_port = port;
+    printf("Port: %d\n", port);
+    ((struct sockaddr_in*)&remote)->sin_port = htons(port);
 
     if ((sockfd = socket(remote.ai_family, remote.ai_socktype,
             remote.ai_protocol)) < 0) ERR("sendFile socket failed");
@@ -50,7 +49,7 @@ void sendFile(char *filename, int filelen, int port) {
     ptr = malloc(filelen);
     if ((filefd = open(filename, O_RDONLY)) < 0) ERR("sendFile open failed");
     if (read(filefd, ptr, filelen) < 0) ERR("sendFile read failed");
-    while ((len = write(sockfd, ptr, filelen)) > 0) ;
+    while ((len = write(sockfd, ptr, filelen)) > 0) puts("Sending...");
     // if (len < 0) ERR("sendFile write failed");
 
     // Clean up
