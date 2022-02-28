@@ -19,6 +19,7 @@ void client(int sockfd)
         write(STDOUT_FILENO, buff, len);
         printf("Len: %d\n", len);
     }
+    if (len < 0) ERR("read failed");
 }
    
 int main()
